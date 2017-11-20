@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>小飞象-空间天气</title>
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta name="author" content="jgx" />
+    <link rel="shortcut icon" href="xfx.png">
+    <script type="text/javascript" src='http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js'></script>
+
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="echarts.min.js"></script>
+    <script src="echarts-gl.min.js"></script>
+</head>
+
+<style type="text/css">
+body {
+    background-image: url(timgb.jpg);
+    background-size: cover;
+    background-attachment: fixed;
+}
+/*用于修饰topbar*/
+img#left {
+    position: fixed;
+    margin-left: -35px;
+    margin-top: -4px;
+    z-index: 20;
+}
+
+ul#topbar {
+    width: 100%;
+    background-color: #161627;
+    list-style-type: none;
+    margin: 0px;
+    padding-top: 15px;
+    padding-bottom: 14px;
+    border: 0px;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 19;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.3);
+}
+
+ul#topbar>li {
+    display: inline;
+}
+
+ul#topbar>li>a {
+    position: relative;
+    left: 180px;
+    color: grey;
+    text-align: center;
+    font-size: 14px;
+    padding: 15px 15px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    -webkit-transition: background-color 0.3s;
+}
+
+#xiamenair img {
+    position: relative;
+    left: 0px;
+}
+
+li#xiamenair {
+    position: absolute;
+    right: 180px;
+    top: 14px;
+}
+
+ul#topbar>li>a:before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    right: 50%;
+    top: 0%;
+    background: #1793d6;
+    height: 4px;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+    -webkit-transition-duration: 0.3s;
+    -webkit-transition-timing-function: ease-out;
+}
+
+ul#topbar>li>a:hover:before {
+    left: 0;
+    right: 0;
+}
+
+ul#topbar>li>a:hover {
+    color: white;
+    background-color: rgba(1, 144, 214, 0.28);
+}
+/*topbar的下拉菜单修饰项*/
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top:95.2%;
+  left:220px;
+  background-color: #161627;
+  min-width: 125px;
+  padding: 0;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.8);
+}
+#homepage:hover .dropdown-content {
+  display: block;
+}
+#contentli {
+	display: block; /*把<a>模块设置成块级元素，并去掉上级<ul>的所有margin，则<a>模块会占满整个部分*/
+    color: grey;
+    font-size: 14px;
+    text-align: center;
+    padding: 15px 15px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+#contentli:hover {
+    color: white;
+    background-color: rgba(1, 144, 214, 0.28);
+    text-decoration: none;
+}
+/*给所有的背景框加一个shadow*/
+#background {
+	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.6);
+}
+/*D-region简介提示框的修饰项*/
+#info-content {
+	display: none;
+	height:180px; 
+	width: 400px; 
+	background: rgba(1,1,1,0.5); 
+	position: absolute; 
+	top: -190px; left: -339px;
+	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.6);
+}
+#information:hover #info-content {
+	display: block;
+}
+/*用于修饰bootstrap标签页*/
+ul#myTab>li>a {
+    border: none;
+    color: white;
+    font-size: 20px;
+    background-color: rgba(1, 1, 1, 0);
+}
+
+ul#myTab>li>a:hover {
+    border: none;
+}
+
+ul#myTab>.active a {
+    background-color: rgba(1, 144, 214, 0.48);
+}
+</style>
+
+<body style="margin: 0px;position: relative;">
+
+    <ul id="topbar">
+        <a href="spaceweather">
+            <img id="left" src="logo_spaceweather.png" height="27px">
+        </a>
+        <li id="homepage">
+            <a href="">NOAA空间天气</a>
+            <ul class='dropdown-content' style="list-style-type: none;">
+            	<li ><a id="contentli" href="http://www.swpc.noaa.gov/communities/aviation-community-dashboard">航空面板</a></li>
+            	<li ><a id="contentli" href="http://services.swpc.noaa.gov/products/">数据源</a></li>
+            </ul>
+        </li>
+        <li id="summary">
+            <a href="http://www.nsmc.org.cn/nsmc/channels/spaceweather.html">国家空间天气监测中心</a>
+        </li>
+        <li id="xiamenair">
+            <a id="xiamenair" href="http://www.avt7.com/SignificantChart">
+                <img id="right" onmouseenter="changeImage()" onmouseout="changeImage()" src="xiamenair1.png" height="25px">
+            </a>
+        </li>
+    </ul>
+
+    <div id= 'D_region_title' style="height:50px; width: 18%; position: absolute; top: 70px; left: 2%;">
+    	<p style="color: white; font-size: 20px;font-weight: bold">D区吸收频率预报</p>
+    </div>
+    <div id="D_region" style="height:510px; width: 40%; position: absolute; top: 90px; left: 5%"></div>
+    <div id ='information' style="height:60px; width: 60px; background: rgba(1,1,1,0.5); position: absolute; top: 540px; left: 43.5%;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.6);">
+ 		<img src="info.png" style="height:60px; height: 60px">
+ 		<div id='info-content'>
+ 			<p style="margin: 8px 8px;color:#1896d9; font-size: 23px;text-align: left;font-weight: bold">D区吸收预报</p>
+ 			<p style="margin: 8px 8px;color:white; font-size: 15px;text-align: justify;">长程的HF（3-30MHz）电磁波传播依赖于大气电离层的反射，但由于电离层D区的吸收作用，电磁波在反射过程中会被衰减。D区吸收预报产品描述了太阳X射线通量和SEP(太阳能量粒子)事件能够多大程度上导致HF通讯的中断和质量下降。</p>
+ 		</div>
+    </div>
+
+    <div id = 'background' style ="height:140px; width: 48%; position: absolute; top: 70px; right: 10px; background: rgba(0,0,0,0.5)">
+        <p style="margin: 8px 8px;color:#1896d9; font-size: 23px;text-align: left;font-weight: bold">未来三天空间天气预报</p>
+        <p style="margin: 8px 8px;color:white; font-size: 15px;text-align: justify;">预计未来三天，太阳活动水平低，爆发M级以上耀斑的可能性低。<br>预计未来三天，地磁活动平静到微扰。地球同步轨道能量大于2 MeV的高能电子通量维持高水平。<br>预计未来三天，电离层天气以平静为主。</p>
+    </div>
+
+    <div id = 'backgroud' style ="height:350px; width: 48%; position: absolute; top: 230px; right: 10px; background: rgba(0,0,0,0.5)"></div>
+    <div id = "curve_sw" style="height:340px; width: 48%; position: absolute; top: 230px; right: 10px"></div>
+    <div id = 'background' style="height:150px; width: 48%; position: absolute; top: 590px; right: 10px; background: rgba(0,0,0,0.5)">
+    	<p style="margin: 8px 8px;color:#1896d9; font-size: 23px;text-align: left;font-weight: bold">太阳风</p>
+    	<p style="margin: 8px 8px;color:white; font-size: 15px;text-align: justify;">太阳风是从太阳表面持续向外发射的，包含大量质子和电子的等离子体。在一定程度上，太阳风相当于空间天气的背景环境场。太阳磁场内嵌于这些等离子体中，跟随太阳风一起向外辐射。太阳赤道面上的太阳风速一般为400km/s。高太阳风速会带来地磁风暴，低太阳风速代表空间天气状况平稳。</p>
+    </div>
+
+    <div id = 'backgroud' style ="height:290px; width: 48%; position: absolute; top: 760px; right: 10px; background: rgba(0,0,0,0.5)"></div>
+    <div id = "curve" style="height:270px; width: 48%; position: absolute; top: 760px; right: 10px"></div>
+    <div id = 'background' style="height:150px; width: 48%; position: absolute; top: 1060px; right: 10px; background: rgba(0,0,0,0.5)">
+    	<p style="margin: 8px 8px;color:#1896d9; font-size: 23px;text-align: left;font-weight: bold">行星K指数（Kp）</p>
+    	<p style="margin: 8px 8px;color: white;font-size: 15px;text-align: justify;">行星K指数，简称Kp指数，用于描述地磁风暴的大小，Kp指数对于地球磁场的扰动具有非常好的指示意义，NOAA空间天气预报中心以此指数为标准，决定是否向相关用户发布预警和警报。受地磁风暴影响最大的群体有：电网系统、航空飞行系统和经由电离层传播的无线电系统。</p>
+    </div>
+
+    <div id = 'backgroud' style ="height:210px; width: 45%; position: absolute; top: 640px; left: 3%; background: rgba(0,0,0,0.5)"></div>
+    <div id="index" style="height:190px; width: 45%; position: absolute; top: 650px; left: 3%"></div>
+
+    <!-- 引用bootstrap里面的标签页 -->
+    <ul id="myTab" class="nav nav-tabs" style="position:absolute; top:860px; width: 45%; left: 3%; height:50px; background-color:rgba(0,0,0,0.5)">
+        <li class="active" style="width:33.33%;height:50px;text-align:center; border-top:2px solid rgb(0,0,0,0.5)">
+            <a href="#tab-r" data-toggle="tab" style="height:50px;">R指数等级</a>
+        </li>
+        <li style="width:33.33%;height:50px;text-align:center;">
+            <a href="#tab-s" data-toggle="tab" style="height:50px">S指数等级</a>
+        </li>
+        <li style="width:33.34%;height:50px;text-align:center;">
+            <a href="#tab-g" data-toggle="tab" style="height:50px">G指数等级</a>
+        </li>
+    </ul>
+    <div id="myTabContent" class="tab-content" style="position:absolute; top:910px;width: 45%; left: 3%; background: rgba(0,0,0,0.5)">
+        <div class="tab-pane active" id="tab-r" style="height:300px;">
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:10px;left:20px;background: #c80000">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">R 5</p>
+        	</div>
+        	<p style="position:relative;top:15px;left:70px;color:#c80000;font-size: 20px;font-weight: bold;">极端</p>
+        	<p style="position: absolute;top:15px;left:120px;margin-right: 10px;color:white;font-size: 13px;">整个地球向阳面，HF通讯功能完全失效；低频导航信号中断，无法定位；卫星导航定位误差严重，持续数小时。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:60px;left:20px;background: #ff0000">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">R 4</p>
+        	</div>
+        	<p style="position:absolute;top:65px;left:70px;color:#ff0000;font-size: 20px;font-weight: bold;">严重</p>
+        	<p style="position: absolute;top:65px;left:120px;margin-right: 10px;color:white;font-size: 13px;">地球向阳面大部分区域，HF通讯功能失效；低频导航信号中断，无法定位；卫星导航定位有微弱影响，持续1-2小时。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:110px;left:20px;background: #ff9600">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">R 3</p>
+        	</div>
+        	<p style="position:absolute;top:115px;left:70px;color:#ff9600;font-size: 20px;font-weight: bold;">重度</p>
+        	<p style="position: absolute;top:115px;left:120px;margin-right: 10px;color:white;font-size: 13px;">地球向阳面大部分区域，HF通讯功能失效；低频导航信号受到严重影响，持续1小时左右。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:160px;left:20px;background: #ffc800">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">R 2</p>
+        	</div>
+        	<p style="position:absolute;top:165px;left:70px;color:#ffc800;font-size: 20px;font-weight: bold;">中度</p>
+        	<p style="position: absolute;top:165px;left:120px;margin-right: 10px;color:white;font-size: 13px;">地球向阳面部分区域，HF通讯功能失效；低频导航信号受到较严重影响，持续几十分钟。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:210px;left:20px;background: #f6eb14">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">R 1</p>
+        	</div>
+        	<p style="position:absolute;top:215px;left:70px;color:#f6eb14;font-size: 20px;font-weight: bold;">轻度</p>
+        	<p style="position: absolute;top:215px;left:120px;margin-right: 10px;color:white;font-size: 13px;">地球向阳面部分区域，HF通讯功能信号变差，偶尔中断；低频导航信号间歇性受到影响。</p>
+        </div>
+        <div class="tab-pane" id="tab-s" style="height:300px;">
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:10px;left:20px;background: #c80000">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">S 5</p>
+        	</div>
+        	<p style="position:relative;top:15px;left:70px;color:#c80000;font-size: 20px;font-weight: bold;">极端</p>
+        	<p style="position: absolute;top:15px;left:120px;margin-right: 10px;color:white;font-size: 13px;">高纬度飞行的机组与乘客可能收到辐射影响；卫星图像出现严重噪音；对太阳能电池板造成永久性伤害；极地地区HF通讯可能完全中断。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:60px;left:20px;background: #ff0000">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">S 4</p>
+        	</div>
+        	<p style="position:absolute;top:65px;left:70px;color:#ff0000;font-size: 20px;font-weight: bold;">严重</p>
+        	<p style="position: absolute;top:65px;left:120px;margin-right: 10px;color:white;font-size: 13px;">高纬度飞行的机组与乘客可能收到辐射影响；卫星图像出现噪音；对太阳能电池板效能有严重影响；极地地区HF通讯可能中断。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:110px;left:20px;background: #ff9600">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">S 3</p>
+        	</div>
+        	<p style="position:absolute;top:115px;left:70px;color:#ff9600;font-size: 20px;font-weight: bold;">重度</p>
+        	<p style="position: absolute;top:115px;left:120px;margin-right: 10px;color:white;font-size: 13px;">高纬度飞行的机组与乘客可能收到辐射影响；卫星图像可能有噪音；对太阳能电池板效能有轻微影响；极地地区HF通讯质量下降。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:160px;left:20px;background: #ffc800">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">S 2</p>
+        	</div>
+        	<p style="position:absolute;top:165px;left:70px;color:#ffc800;font-size: 20px;font-weight: bold;">中度</p>
+        	<p style="position: absolute;top:172px;left:120px;margin-right: 10px;color:white;font-size: 13px;">高纬度飞行的机组与乘客可能收到辐射影响；对极地地区HF通讯有轻微影响。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:210px;left:20px;background: #f6eb14">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">S 1</p>
+        	</div>
+        	<p style="position:absolute;top:215px;left:70px;color:#f6eb14;font-size: 20px;font-weight: bold;">轻度</p>
+        	<p style="position: absolute;top:223px;left:120px;margin-right: 10px;color:white;font-size: 13px;">对极地地区HF通讯有轻微影响。</p>
+        </div>
+        <div class="tab-pane" id="tab-g" style="height:300px;">
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:10px;left:20px;background: #c80000">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">G 5</p>
+        	</div>
+        	<p style="position:relative;top:15px;left:70px;color:#c80000;font-size: 20px;font-weight: bold;">极端</p>
+        	<p style="position: absolute;top:15px;left:120px;margin-right: 10px;color:white;font-size: 13px;">一些电网系统可能完全瘫痪和中断。变压器损坏；飞行器出现大范围表面充电现象；数据传输和卫星定位均出现问题；40°N区域可见极光。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:60px;left:20px;background: #ff0000">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">G 4</p>
+        	</div>
+        	<p style="position:absolute;top:65px;left:70px;color:#ff0000;font-size: 20px;font-weight: bold;">严重</p>
+        	<p style="position: absolute;top:65px;left:120px;margin-right: 10px;color:white;font-size: 13px;">电网系统可能出现大范围电压控制问题，飞行器可能发生表面充电现象和卫星定位需校正方位；45°N可见极光。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:110px;left:20px;background: #ff9600">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">G 3</p>
+        	</div>
+        	<p style="position:absolute;top:115px;left:70px;color:#ff9600;font-size: 20px;font-weight: bold;">重度</p>
+        	<p style="position: absolute;top:115px;left:120px;margin-right: 10px;color:white;font-size: 13px;">电网系统需要进行电压校正；卫星部分组件可能发生表面充电现象，近地轨道卫星滞后效应更明显，方位需要校正；50°N可见极光。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:160px;left:20px;background: #ffc800">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">G 2</p>
+        	</div>
+        	<p style="position:absolute;top:165px;left:70px;color:#ffc800;font-size: 20px;font-weight: bold;">中度</p>
+        	<p style="position: absolute;top:165px;left:120px;margin-right: 10px;color:white;font-size: 13px;">高纬度电力系统会发生电压告警，长时间的电磁风暴会导致变压器损坏；卫星轨道方位需校正；55°N可见极光。</p>
+
+        	<div id="scale icon" style="position: absolute;height: 40px;width: 40px;top:210px;left:20px;background: #f6eb14">
+        		<p style="text-align: center;font-size: 20px;font-weight: bold;color: white;position: relative;top:5px">G 1</p>
+        	</div>
+        	<p style="position:absolute;top:215px;left:70px;color:#f6eb14;font-size: 20px;font-weight: bold;">轻度</p>
+        	<p style="position: absolute;top:215px;left:120px;margin-right: 10px;color:white;font-size: 13px;">会发生弱的电网扰动现象，对卫星运行有微弱影响；迁徙性动物会受影响，极地地区可见极光。</p>
+        </div>
+    </div>
+    <!-- bootstrap封装结束 -->
+
+</body>
+
+<script type="text/javascript">
+
+//厦航小图标链接设置
+function changeImage() {
+    element = document.getElementById('right')
+    if (element.src.match("1")) {
+        element.src = "xiamenair2.png";
+    } else {
+        element.src = "xiamenair1.png";
+    }
+};
+//仪表盘的echarts设置
+var myChart = echarts.init(document.getElementById('index'));
+//从NOAA服务器上获取三个指数的相关数据
+$.getJSON("http://services.swpc.noaa.gov/products/noaa-scales.json", function(data) {
+	//获取json里面的日期
+	var date = new Array()
+	for (var i = 0; i<4; i++) {
+		num = i
+		date[i] = data[num.toString()]['DateStamp'].substr(5)
+	}
+	date[0] = {
+		value: 'obs',
+		symbol: 'diamond',
+		symbolSize: 20
+	}
+	//设置echarts仪表盘相关参数
+	option = {
+	    baseOption: {
+	        timeline: {
+	            axisType: 'category',
+	            autoPlay: true,
+	            playInterval: 1500,
+	            symbolSize: 15,
+	            padding: [5,80,0,80],
+	            left: 12,
+	            right:12,
+	            lineStyle: {
+	            	color: '#fffbfb'
+	            },
+	            data: date,
+	            //设置timeline里面字体的颜色
+	            label: {
+	                normal: {
+	                    textStyle: {
+	                        color: '#fffbfb',
+	                        fontSize: 13
+	                    }
+	                }
+	            },
+	        },
+	        series: [
+	        	{
+	        		type: 'gauge',
+	        		center: ['17%', '45%'],
+			        radius : '70%',
+	        		min: 0,
+	        		max: 5,
+	        		splitNumber: 5,
+	        		axisLine: {            // 坐标轴线
+	                	lineStyle: {       // 属性lineStyle控制线条样式
+		                    color: [[0.2, '#F6EB14'],[0.4, '#FFC800'],[0.6, '#FF9600'],[0.8, '#FF0000'],[1, '#C80000']],
+		                    shadowColor : '#fff', //默认透明
+		                    width: 10,
+		                    shadowBlur: 10
+		                }
+	                },
+	                title: {
+	                	textStyle: {
+	                		fontSize: 20,
+	                		color: '#fff'
+	                	}
+	                },
+	                splitLine: {           // 分隔线
+		                length: 16,         // 属性length控制线长
+		            }
+	        	},
+	        	{
+	        		type: 'gauge',
+	        		center: ['50%', '45%'],
+	        		radius : '70%',
+	        		min: 0,
+	        		max: 5,
+	        		splitNumber: 5,
+	        		axisLine: {            // 坐标轴线
+	                	lineStyle: {       // 属性lineStyle控制线条样式
+		                    color: [[0.2, '#F6EB14'],[0.4, '#FFC800'],[0.6, '#FF9600'],[0.8, '#FF0000'],[1, '#C80000']],
+		                    shadowColor : '#fff', //默认透明
+		                    width: 10,
+		                    shadowBlur: 10
+		                }
+	                },
+	                title: {
+	                	textStyle: {
+	                		fontSize: 20,
+	                		color: '#fff'
+	                	}
+	                },
+	                splitLine: {           // 分隔线
+		                length: 16,         // 属性length控制线长
+		            }
+	        	},
+	        	{
+	        		type: 'gauge',
+			        center: ['83%', '45%'],
+			        radius : '70%',
+	        		min: 0,
+	        		max: 5,
+	        		splitNumber: 5,
+	        		axisLine: {            // 坐标轴线
+	                	lineStyle: {       // 属性lineStyle控制线条样式
+		                    color: [[0.2, '#F6EB14'],[0.4, '#FFC800'],[0.6, '#FF9600'],[0.8, '#FF0000'],[1, '#C80000']],
+		                    shadowColor : '#fff', //默认透明
+		                    width: 10,
+		                    shadowBlur: 10
+		                }
+	                },
+	                title: {
+	                	textStyle: {
+	                		fontSize: 20,
+	                		color: '#fff'
+	                	}
+	                },
+	                splitLine: {           // 分隔线
+		                length: 16,         // 属性length控制线长
+		            }
+	        	}
+	        ]
+	    },
+	    options: [
+	    {
+		    series: [
+		        {
+		            data: [{value: data['0']['R']['Scale'], name: 'R'}]
+		        },
+		        {
+		            data: [{value: data['0']['S']['Scale'], name: 'S'}]
+		        },
+		        {
+		            data: [{value: data['0']['G']['Scale'], name: 'G'}]
+		        },
+		    ]
+		},
+		    {
+		    series: [
+		        {
+		            data: [{value: data['1']['G']['Scale'], name: 'R'}]
+		        },
+		        {
+		            data: [{value: data['1']['G']['Scale'], name: 'S'}]
+		        },
+		        {
+		            data: [{value: data['1']['G']['Scale'], name: 'G'}]
+		        },
+		    ]
+		},
+		    {
+		    series: [
+		        {
+		            data: [{value: data['2']['G']['Scale'], name: 'R'}]
+		        },
+		        {
+		            data: [{value: data['2']['G']['Scale'], name: 'S'}]
+		        },
+		        {
+		            data: [{value: data['2']['G']['Scale'], name: 'G'}]
+		        },
+		    ]
+		},
+			{
+			series: [
+		        {
+		            data: [{value: data['3']['G']['Scale'], name: 'R'}]
+		        },
+		        {
+		            data: [{value: data['3']['G']['Scale'], name: 'S'}]
+		        },
+		        {
+		            data: [{value: data['3']['G']['Scale'], name: 'G'}]
+		        },
+		    ]
+		},
+		]
+	};
+	myChart.setOption(option);
+    // 使echarts图表自适应窗口大小
+    window.addEventListener("resize",function(){
+        myChart.resize();
+    });
+}); //jquery获取json数据函数的结束括号
+
+//旋转地球的相关设置
+var myChart2 = echarts.init(document.getElementById('D_region'));
+$.when($.get('D_region.json'), $.post('route.json')).done(function (data1, data2) {
+
+	data1 = data1[0].filter(function (dataItem) {
+        return dataItem[2] > 0;
+    });
+    $.each(data2[0], function(i,obj) {
+        data2[0][i]['visualMap'] = false
+    })
+    console.log(data2[0])
+
+	option2 = {
+		visualMap: {
+            show: true,
+            min: 1,
+            max: 101,
+            inRange: {
+	            symbolSize: [10, 20],
+	            color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'],
+	            colorAlpha: [0.2, 1]
+	        },
+	    },
+	    globe: {
+	        baseTexture: 'data-1491837049070-rJZtl7Y6x.jpg',
+	        //baseTexture: 'data-1491837049070-rJZtl7Y6x.jpg',
+	        globeOuterRadius: 100,
+	        shading: 'realistic',
+	        //environment: 'data-1491837999815-H1_44Qtal.jpg',
+	        realisticMaterial: {
+	            roughness: 0.9
+	        },
+	        postEffect: {
+	            enable: true
+	        },
+	        light: {
+                ambient: {
+                intensity: 0.6
+                },
+	            main: {
+	                intensity: 0,
+	                shadow: false
+	            },
+	        },
+	        viewControl: {
+                beta: 180,
+                alpha: 65,
+                distance: 140
+            }
+	    },
+	    series: [
+	    	{
+	            type: 'scatter3D',
+	            coordinateSystem: 'globe',
+	            blendMode: 'lighter',
+                itemStyle: {
+                    opacity: 0.3
+                },
+	            label: {
+	            	textStyle: {
+	            		color: 'white',
+	            		borderWidth: 0,
+	            		fontSize: 25,
+	            		fontWeight: 'bold'
+	            	},
+	            },
+	            data: data1
+	    	},
+            {
+                type: 'scatter3D',
+                coordinateSystem: 'globe',
+                symbol: 'diamond',
+                itemStyle: {
+                    opacity: 1,
+                    color: '#1379af'
+                },
+                label: {
+                    textStyle: {
+                        color: 'black',
+                        fontSize: 28,
+                        fontWeight: 'bold'
+                    },
+                    formatter: '{b}'
+                },
+                data: [{name: "ZSFZ", value:[119.399,25.56,5],visualMap:false},{name: "KJFK", value:[286.533, 40.384,5],visualMap:false}]
+            },
+            // 叠加航线上去
+            {
+
+                type: 'lines3D',
+                coordinateSystem: 'globe',
+                lineStyle: {
+                    width: 3,
+                    color: '#1379af',
+                    opacity: 1
+                },
+                data: data2[0]
+            }
+	    ]
+	};
+	myChart2.setOption(option2);
+    // 使echarts图表自适应窗口大小
+    window.addEventListener("resize",function(){
+        myChart2.resize();
+    });
+});
+
+// kp指数曲线
+var myChart3 = echarts.init(document.getElementById('curve'));
+$.get('http://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json', function (data) {
+	// 去掉数组第一个元素（标题）
+	data.shift()
+
+    myChart3.setOption(option3 = {
+
+	   	textStyle: {
+	        		fontSize: 20,
+	        		color: '#fff'
+	        	},
+	    legend: {
+	        textStyle:{
+	            color: 'white'
+	        },
+	    },
+        title: {
+            text: 'Kp 指数',
+    	   	textStyle: {
+	    		fontSize: 20,
+	    		color: '#fff'
+	    	},
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        xAxis: {
+            data: data.map(function (item) {
+                return item[0].substr(5);
+            }),
+        },
+        yAxis: {
+            splitLine: {
+                show: false
+            },
+        },
+        dataZoom: [{
+            startValue: data[2][0].substr(5)
+        }, {
+            type: 'inside'
+        }],
+        visualMap: {
+            top: 10,
+            right: 10,
+            pieces: [{
+                gt: 0,
+                lte: 3,
+                color: '#096'
+            }, {
+                gt: 3,
+                lte: 4,
+                color: '#ffde33'
+            }, {
+                gt: 4,
+                color: 'red'
+            }],
+            outOfRange: {
+                color: '#999'
+            }
+        },
+        series: {
+            name: 'Kp 指数',
+            type: 'line',
+            data: data.map(function (item) {
+                return item[1];
+            }),
+            markLine: {
+                silent: false,
+                data: [{
+                    yAxis: 3
+                }, {
+                    yAxis: 4
+                }]
+            }
+        }
+    });
+    // 使echarts图表自适应窗口大小
+    window.addEventListener("resize",function(){
+        myChart3.resize();
+    });
+});
+
+// 太阳风曲线
+var myChart4 = echarts.init(document.getElementById('curve_sw'));
+myChart4.showLoading({maskColor: 'rgba(0,0,0,0.5)'});
+$.get('http://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json').done(function (data) {
+	myChart4.hideLoading();
+    // 去掉数组第一个元素（标题）
+	data.shift()
+
+    myChart4.setOption(option4 = {
+    	color: ['#5793f3', '#d14a61'],
+	   	textStyle: {
+	        		fontSize: 20,
+	        		color: '#fff'
+	    },
+	    title: {
+	        text: '太阳风',
+	        textStyle: {
+	        		fontSize: 20,
+	        		color: '#fff'
+	        }
+	    },
+	    legend: {
+	        data: ['密度', '速度'],
+	        align: 'left',
+	        textStyle:{
+	        	color:'#fff',
+	        	fontSize: 17
+	        }
+	    },
+	    tooltip : {
+	        trigger: 'axis',
+	        axisPointer: {
+	            type: 'cross',
+	            animation: false,
+	            label: {
+	                backgroundColor: '#505765'
+	            }
+        	}
+        },
+	    xAxis: {
+	        data: data.map(function(item){
+	        	return item[0].substr(5,11)
+	        }),
+	        silent: false,
+	        splitLine: {
+	            show: false
+	        }
+	    },
+	    yAxis: [{
+	    	name: '【密度】',
+	    	nameTextStyle:{
+                fontSize: 11
+            },
+            splitLine: {
+                interval:3,
+                lineStyle:{
+                	color:'grey'
+                }
+            },
+	    	type: 'value',
+	    	max: 20,
+	    	min: 4
+	    },{
+	    	name: '【速度(km/s)】',
+            nameTextStyle:{
+                fontSize: 11
+            },
+            splitLine: {
+                show: false
+            },
+	    	type: 'value',
+	    	max: 760,
+	    	min: 400
+	    }],
+	    dataZoom: [
+	        {
+	            show: true,
+	            realtime: true,
+	            start: 30
+	        },
+	        {
+	            type: 'inside',
+	            realtime: true,
+	            start: 30
+	        }
+	    ],
+	    series: [{
+	        name: '密度',
+	        type: 'line',
+	        data: data.map(function(item){
+	        	return item[1]
+	        }),
+	        areaStyle: {
+                normal: {},
+            },
+            lineStyle: {
+                normal: {
+                    width: 2
+                }
+            },
+	        animationDelay: function (idx) {
+	            return idx * 10;
+	        }
+	    }, {
+	        name: '速度',
+	        type: 'line',
+	        yAxisIndex:1,
+	        data: data.map(function(item){
+	        	return item[2]
+	        }),
+	        areaStyle: {
+                normal: {
+		            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+		                    offset: 0,
+		                    color: 'rgb(255, 158, 68)'
+		                }, {
+		                    offset: 1,
+		                    color: 'rgb(255, 70, 131)'
+		                }]),
+                	opacity: 0.5
+                }
+            },
+            lineStyle: {
+                normal: {
+                    width: 2,
+                    shadowColor: 'white'
+                }
+            },
+	        animationDelay: function (idx) {
+	            return idx * 10 + 100;
+	        }
+	    }],
+	    animationEasing: 'elasticOut',
+	    animationDelayUpdate: function (idx) {
+	        return idx * 5;
+	    }
+    });
+    // 使echarts图表自适应窗口大小
+    window.addEventListener("resize",function(){
+        myChart4.resize();
+    });
+});
+</script>
+
+</html>
